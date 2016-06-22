@@ -25,7 +25,7 @@ def read_data(filename):
     :param filename: String variable which contains the file name to be read
     :return: returns pandas dataframe containing the csv file
     """
-    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", filename)
+    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", filename)
     print "Reading file: %s"%filename
     try:
         data = pd.read_csv(file_path) # We can not make index_col= 0 because the function detect_peaks() makes use of
@@ -185,6 +185,8 @@ if __name__ == "__main__":
     # print data["hart"]
     filtered = butter_lowpass_filter(data["hart"], 2.5, frequency, 5)
 
+    file_save_path = os.path.dirname(os.path.abspath(__file__))
+
     plt.subplot(211)
     plt.plot(data["hart"], color = "red", label = "original hart", alpha = 0.5)
     plt.legend(loc = "best")
@@ -192,7 +194,7 @@ if __name__ == "__main__":
     plt.plot(filtered, color="green", label="filtered hart", alpha=0.5)
     plt.legend(loc = "best")
     plt.suptitle("original v/s filtered data")
-    plt.show()
+    plt.savefig(os.path.join(file_save_path, "tmp","orig_cleaned.jpeg"))
     data["hart"] = filtered
 
     roll_mean_data = rolling_mean(data, window_size=0.75, frequency=frequency)
@@ -213,12 +215,13 @@ if __name__ == "__main__":
     ybeat = signal_measures["R_values"]
     # print roll_mean_data["hart_rolling_mean"]
     # print ybeat
+    plt.subplot(111)
     plt.title("Heart Rate signal with moving average")
     plt.plot(roll_mean_data["hart"], alpha=0.5, color='blue', label="raw signal")
     plt.plot(roll_mean_data["hart_rolling_mean"], color='green', label="moving average")
     plt.scatter(R_positions, ybeat, color='red', label="average: %.1f BPM" % time_measures['bpm'])
     plt.legend(loc=4, framealpha=0.6)
-    plt.show()
+    plt.savefig(os.path.join(file_save_path, "tmp","Rs_identified.jpeg"))
 
     # print signal_measures["best"]
     # print signal_measures["roll_mean"][100]

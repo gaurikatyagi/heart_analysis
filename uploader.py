@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, url_for, flash, session, redirect
 import os
+import time_series_analysis
 
 app = Flask(__name__)
 ALLOWED_EXTENSIONS = ["csv"]
@@ -77,7 +78,7 @@ def csvfiles():
 @app.route("/analyze", methods = ["POST"])
 def analyze():
     if request.method == "POST":
-        print request.select["file_name"]
+        return request.form["file_name"]
 
 if __name__ == '__main__':
     app.run(debug=True)
