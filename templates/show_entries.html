@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block body %}
+
+{% if session.success %}
+    <h2>Which file do you want to analyze?</h2>
+    <form action = "{{ url_for('analyze')}}" method = post>
+    <!--<ul class=entries>-->
+    <select name = "file_name">
+        {% for entry in entries %}
+        <!--<li>{{entry.text}} -->
+        <option>{{entry.text}}</option>
+        {% endfor %}
+    </select>
+    <br/>
+    <input type = "submit" name = "submit" value = "submit">
+    </form>
+    <!--</ul>-->
+{% else %}
+    No files here so far
+{% endif %}
+
+{% endblock %}

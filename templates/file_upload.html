@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block body %}
+    <h1>Upload new File</h1>
+    <form action = "{{ url_for('uploader') }}" method = post enctype = multipart/form-data>
+      <p><input type = file name = file>
+          <!--<img src="{{url_for('static', filename = 'csv.jpg')}}"> -->
+         <input type = submit value = uplaod>
+    </form>
+{% endblock %}
