@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, url_for, flash, session, redirect
 import os
-import time_series_analysis
+import data_analysis
 
 app = Flask(__name__)
 ALLOWED_EXTENSIONS = ["csv"]
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath( __file__ )), "data")
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath( __file__ )), "static")
 USERNAME = "admin"
 PASSWORD = "gt"
 SECRET_KEY = "development key"
@@ -33,6 +33,7 @@ def login():
             error = "Invalid Password"
         else:
             session["logged_in"] = True
+            session["file_name"] = None
             flash(message = "You are now logged in")
             return render_template("file_upload.html")
     return render_template("login.html", error = error, fig = url_for("static", filename = "skeleton.gif"))
@@ -40,6 +41,7 @@ def login():
 @app.route("/logout")
 def logout():
     session.pop("logged_in", None)
+    session.pop("file_name", None)
     flash(message = "You're now logged out")
     return redirect(url_for("upload_file"))
 
@@ -77,8 +79,41 @@ def csvfiles():
 
 @app.route("/analyze", methods = ["POST"])
 def analyze():
+    # file_name = None
     if request.method == "POST":
-        return request.form["file_name"]
+        file_name = request.form["file_name"]
+        session["file_name"] = file_name
+        return render_template("orig.html", data_file = url_for("static", filename=file_name))
+    else:
+        return redirect(url_for("upload_file"))
+
+
+@app.route('/moving_average', methods = ["POST"])
+def moving_average():
+    data = data_analysis.read_data(session["file_name"])
+    frequency = data_analysis.calc_freq_rate(data)
+    # print "Frequency of the data is: ", frequency
+    filtered = data_analysis.butter_lowpass_filter(data["hart"], 2.5, frequency, 5)
+    roll_mean_data = data_analysis.rolling_mean(data, window_size=0.75, frequency=frequency)
+    roll_mean_data.to_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "temp", "moving_avg.csv"),
+                          index = False)
+    return render_template("data_and_average.html", data_file = url_for("static", filename = "temp/moving_avg.csv"))
+
+@app.route('/peaks')
+def r_complex():
+    data = data_analysis.read_data(session["file_name"])
+    frequency = data_analysis.calc_freq_rate(data)
+    # print "Frequency of the data is: ", frequency
+    filtered = data_analysis.butter_lowpass_filter(data["hart"], 2.5, frequency, 5)
+    roll_mean_data = data_analysis.rolling_mean(data, window_size=0.75, frequency=frequency)
+    roll_mean_data.to_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "moving_avg.csv"),
+                          index=False)
+    data_analysis.fit_peaks(roll_mean_data, frequency)
+    data_analysis.calc_frequency_measures(roll_mean_data, frequency)
+    data_analysis.time_measures["bpm"] = (len(data_analysis.signal_measures["R_positions"]) / (len(roll_mean_data["hart"]) / frequency) * 60)
+    R_positions = data_analysis.signal_measures["R_positions"]
+    ybeat = data_analysis.signal_measures["R_values"]
+    return render_template("peaks.html", data_file=url_for("static", filename="moving_avg.csv"))
 
 if __name__ == '__main__':
     app.run(debug=True)

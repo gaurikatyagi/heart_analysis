@@ -6,6 +6,8 @@
 #Detecting incorrectly detected / missed peaks;
 #Removing errors and reconstructing the R-R signal to be error-free.
 
+##HARD CODING OF GRAPHS
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,7 +19,7 @@ import sys
 
 signal_measures = {}
 time_measures = {}
-frequency_measure ={}
+frequency_measure = {}
 
 def read_data(filename):
     """
