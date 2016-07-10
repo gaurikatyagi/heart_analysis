@@ -87,6 +87,9 @@ def analyze():
     else:
         return redirect(url_for("upload_file"))
 
+# @app.route('/about')
+# def about():
+#     return render_template('about.html')
 
 @app.route('/moving_average', methods = ["POST"])
 def moving_average():
